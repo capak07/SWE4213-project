@@ -5,8 +5,6 @@ CREATE TABLE BOOKS IF NOT EXISTS (
     genre VARCHAR(255),
     summary TEXT,
     cover_url TEXT,
-    num_reviews INT,
-    sum_reviews INT,
 )
 
 CREATE TABLE USER_BOOKS IF NOT EXISTS (
@@ -23,9 +21,9 @@ CREATE TABLE PROGRESS IF NOT EXISTS (
     book_id FOREIGN KEY REFERENCES BOOKS(book_id),
 )
 
-INSERT INTO books (title, author, genre, summary, cover_url, num_reviews, sum_reviews) VALUES
-    ('The Hunger Games', 'Suzanne Collins', 'Science fiction', 'The Hunger Games follows 16-year-old Katniss Everdeen, a girl from District 12 who volunteers for the 74th Hunger Games in place of her younger sister Primrose Everdeen.', 'https://upload.wikimedia.org/wikipedia/en/d/dc/The_Hunger_Games.jpg', 0, 0),
-    ('Romeo and Juliet', 'William Shakespeare', 'Tragedy', 'Tragedy written by William Shakespeare about the romance between two young Italians from feuding families', 'https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1629680008i/18135.jpg', 0, 0);
+INSERT INTO books (title, author, genre, summary, cover_url) VALUES
+    ('The Hunger Games', 'Suzanne Collins', 'Science fiction', 'The Hunger Games follows 16-year-old Katniss Everdeen, a girl from District 12 who volunteers for the 74th Hunger Games in place of her younger sister Primrose Everdeen.', 'https://upload.wikimedia.org/wikipedia/en/d/dc/The_Hunger_Games.jpg'),
+    ('Romeo and Juliet', 'William Shakespeare', 'Tragedy', 'Tragedy written by William Shakespeare about the romance between two young Italians from feuding families', 'https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1629680008i/18135.jpg');
 
 INSERT INTO user_books (user_id, book_id, have_read) VALUES
     (1, 1, TRUE),
