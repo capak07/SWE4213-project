@@ -8,6 +8,8 @@ const jwt = require('jsonwebtoken');
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
+const authcheck = require('./auth');
+
 const pool = new Pool({
     host: process.env.DB_HOST || 'users-db',
     port: parseInt(process.env.DB_PORT || '5432'),
@@ -116,12 +118,34 @@ app.post('/auth/register', async (req, res) => {
         console.log('Hashing password for email:', email);
         const hashedPassword = await bcrypt.hash(password, 10);
 
-    }
+        console.log('Inserting new user...');
+        const newUser = await pool.query(
+            `INSERT INTO users (first_name, last_name, email, hashed_pass) 
+             VALUES ($1, $2, $3, $4)
+             RETURNING user_id, first_name, last_name, email`,
+            [first_name, last_name, email, hashedPassword]
+        );
 
+        console.log('User successfully registered');
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            user: newUser.rows[0]
+        });
+
+    }
+    catch (err) {
+        console.error('Error during registration:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.get('auth/status', (req, res) => {
-    res.json({ message: 'Filler auth status message' });
+app.get('auth/status', authcheck, async (req, res) => {
+    try {
+        const userData = await pool.query(
+            'SELECT user_id, first_name, last_name, email FROM users WHERE user_id = $1',[req.user.id]
+        );
+    }
 });
 
 app.get('/users/:id', (req, res) => {
