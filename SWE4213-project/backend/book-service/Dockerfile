@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -8,6 +8,8 @@ RUN npm install
 
 COPY . .
 
+RUN npx prisma generate
+
 EXPOSE 3002
 
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

@@ -1,0 +1,7 @@
+curl http://localhost:3002/books - get all books
+curl http://localhost:3002/books/1 - get book with id 1
+curl http://localhost:3002/books/6 - checking get book that doesn't exist
+curl -X POST http://localhost:3002/books \
+  -H "Content-Type: application/json" \
+  -d '{"title": "percy jackson", "author": "rick riordan"}' - inserting new book to db
+curl -X DELETE http://localhost:3002/books/3 - deleting book with id 3

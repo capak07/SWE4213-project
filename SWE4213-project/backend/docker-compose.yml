@@ -4,6 +4,7 @@ services:
     ports:
       - "3002:3002"
     environment:
+      DATABASE_URL: postgresql://postgres:postgres@book-db:5432/bookdb
       DB_HOST: book-db
       DB_PORT: 5432
       DB_NAME: bookdb
@@ -22,6 +23,8 @@ services:
 
   book-db:
     image: postgres:15-alpine
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: bookdb
       POSTGRES_USER: postgres
