@@ -3,6 +3,8 @@ const amqp = require('amqplib');
 const authcheck = require('./auth');
 const app = express();
 const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
@@ -15,10 +17,77 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD || 'postgres',
   });
 
+  const authenticateToken = async (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-app.post('/auth/login', (req, res) => {
-    const { username, password } = req.body;
-    res.json({ message: 'Filler login success message'});
+    if (!token) {
+        return res.status(401).json({ error: 'No token given '});
+    }
+
+    try {
+        const user = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+
+        const result = await pool.query('SELECT user_id FROM users WHERE user_id = $1', [user.id]);
+
+        if(result.rows.length === 0) {
+            return res.status(401).json({ error: 'Invalid token'});
+        }
+
+        req.user = user;
+        next();
+    }
+    catch (err) {
+        console.error('Error verifying token:', err);
+        return res.status(403).json({ error: 'Invalid token'});
+    }
+  };
+
+
+app.post('/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if(!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required'});
+        };
+    
+
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+    if(result.rows.length === 0) {
+        return res.status(401).json({ error: 'Invalid email or password'});
+    }
+
+    const user = result.rows[0];
+
+    const isPasswordValid = await bcrypt.compare(password, user.hashed_pass);
+    if(!isPasswordValid) {
+        return res.status(401).json({ error: 'Invalid email or password'});
+    }
+
+    const token = jwt.sign(
+        {
+            id: user.user_id,
+            email: user.email,
+            name: `${user.first_name} ${user.last_name}`
+        },
+        process.env.JWT_SECRET || 'your_jwt_secret', {expiresIn: '1h'}
+    );
+
+    delete user.hashed_pass;
+
+    res.json({
+        message: 'Login successful',
+        token,
+        user
+    });
+
+}
+catch (err) {
+    console.error('Error during login:', err);
+    res.status(500).json({ error: 'Internal server error' });
+}
+
 });
 
 app.post('/auth/register', (req, res) => {
