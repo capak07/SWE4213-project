@@ -16,29 +16,6 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD || 'postgres',
 });
 
-const authenticateToken = async (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'No token given' });
-    }
-
-    try {
-        const user = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-        const result = await pool.query('SELECT user_id FROM users WHERE user_id = $1', [user.id]);
-
-        if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'Invalid token' });
-        }
-
-        req.user = user;
-        next();
-    } catch (err) {
-        console.error('Error verifying token:', err);
-        return res.status(403).json({ error: 'Invalid token' });
-    }
-};
 
 app.get('/health', async (req, res) => {
     res.status(200).json({ message: 'User service is running' });
@@ -140,7 +117,11 @@ app.get('/auth/status', authcheck, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        res.json(userData.rows[0]);
+        res.json({
+            authenticated: true,
+            user: userData.rows[0]
+        });
+
     } catch (err) {
         console.error('Error fetching user status:', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -150,21 +131,24 @@ app.get('/auth/status', authcheck, async (req, res) => {
 app.get('/users/:id', async (req, res) => {
     try {
         const userId = req.params.id;
+
         const result = await pool.query(
-            'SELECT user_id, first_name, last_name, email FROM users WHERE user_id = $1',
-            [userId]
+            'SELECT user_id, first_name, last_name, email FROM users WHERE user_id = $1', [req.params.id]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'User not found' });
+        if(result.rows.length === 0) {
+            return res.status(404).json({ error: 'User was not found'});
         }
 
         res.json(result.rows[0]);
-    } catch (err) {
+
+    }
+    catch (err) {
         console.error('Error fetching user:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error'});
     }
 });
+
 
 app.get('/userBooks/:userId', async (req, res) => {
     try {
@@ -172,7 +156,13 @@ app.get('/userBooks/:userId', async (req, res) => {
             'SELECT * FROM user_books WHERE user_id = $1',
             [req.params.userId]
         );
+
+        if(result.rows.length === 0) {
+            return res.status(404).json({ error: 'No books found for this user'});
+        }
+
         res.json({ userId: req.params.userId, books: result.rows });
+
     } catch (err) {
         console.error('Error fetching user books:', err);
         res.status(500).json({ error: 'Internal server error' });
