@@ -20,7 +20,15 @@ const pool = new Pool({
 
 
 app.get('/health', async (req, res) => {
-    res.status(200).json({ message: 'User service is running' });
+    try {
+        await prisma.$queryRaw`SELECT 1`;
+        res.status(200).json({ message: 'User service is healthy',
+                               database: 'connected'});
+    }
+    catch(err) {
+        res.status(200).json({ message: 'User service is running',
+                               databse: 'disconnected'});
+    }
 });
 
 app.post('/auth/login', async (req, res) => {
@@ -30,13 +38,14 @@ app.post('/auth/login', async (req, res) => {
             return res.status(400).json({ error: 'Email and password are required' });
         }
 
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-        if (result.rows.length === 0) {
+        const user = await prisma.users.findUnique({
+            where: { email }
+        });
+
+        if (!user) {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
-
-        const user = result.rows[0];
 
         const isPasswordValid = await bcrypt.compare(password, user.hashed_pass);
         if (!isPasswordValid) {
@@ -53,13 +62,14 @@ app.post('/auth/login', async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        delete user.hashed_pass;
+        const { hashed_pass, ...userWithoutPassword } = user;
 
         res.json({
             message: 'Login successful',
             token,
-            user
+            user: userWithoutPassword
         });
+
     } catch (err) {
         console.error('Error during login:', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -83,24 +93,36 @@ app.post('/auth/register', async (req, res) => {
             return res.status(400).json({ error: 'Password must be at least 8 characters in length' });
         }
 
-        const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const existingUser = await prisma.users.findUnique({
+            where: { email }
+        });
 
-        if (existingUser.rows.length > 0) {
+        if (existingUser) {
             return res.status(400).json({ error: 'Email is already registered' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = await pool.query(
-            `INSERT INTO users (first_name, last_name, email, hashed_pass) 
-             VALUES ($1, $2, $3, $4)
-             RETURNING user_id, first_name, last_name, email`,
-            [first_name, last_name, email, hashedPassword]
-        );
+        const newUser = await prisma.users.create({
+            data: {
+                first_name,
+                last_name,
+                email,
+                hashed_pass: hashedPassword,
+                yearly_goal: 0,
+                books_read_this_year: 0
+            },
+                select: {
+                    user_id: true,
+                    first_name: true,
+                    last_name: true,
+                    email: true
+                }
+        });
 
         res.status(201).json({
             message: 'User registered successfully',
-            user: newUser.rows[0]
+            user: newUser
         });
     } catch (err) {
         console.error('Error during registration:', err);
@@ -110,18 +132,25 @@ app.post('/auth/register', async (req, res) => {
 
 app.get('/auth/status', authcheck, async (req, res) => {
     try {
-        const userData = await pool.query(
-            'SELECT user_id, first_name, last_name, email FROM users WHERE user_id = $1',
-            [req.user.id]
-        );
+        const userData = await prisma.users.findUnique({
+            where: { user_id: req.user.id},
+            select: {
+                user_id: true,
+                first_name: true,
+                last_name: true,
+                email: true,
+                yearly_goal: true,
+                books_read_this_year: true
+            }
+        });
 
-        if (userData.rows.length === 0) {
+        if (!userData) {
             return res.status(404).json({ error: 'User not found' });
         }
 
         res.json({
             authenticated: true,
-            user: userData.rows[0]
+            user: userData
         });
 
     } catch (err) {
@@ -134,9 +163,12 @@ app.get('/users/:id', async (req, res) => {
     try {
         const userId = req.params.id;
 
-        const result = await pool.query(
-            'SELECT user_id, first_name, last_name, email FROM users WHERE user_id = $1', [req.params.id]
-        );
+        const result = await prisma.users.findUnique({
+            where: { user_id: userId },
+            select: {
+                
+            }
+        })
 
         if(result.rows.length === 0) {
             return res.status(404).json({ error: 'User was not found'});
@@ -334,20 +366,84 @@ app.put('progress/:userId/:bookId', async (req, res) => {
             await prisma.users.update({
                 where: { user_id: req.user.id},
                 data: {
+                    books_read_this_year: {
+                        increment: 1
+                    }
                     
                 }
-            })
+            });
+
+            console.log(`User ${req.user.id} has completed book ${bookId}`);
         }
 
+        res.json({
+            message: 'Progress successfully updated',
+            progress: savedProgress
+        })
+
+    }
+    catch (err) {
+        console.error('Error updating progress', err);
+        res.status(500).json({ error: 'Internal server error'});
     }
 
 
-})
+});
 
+app.delete('/progress/:userId/:bookId', async (req, res) => {
+    try {
+        if(parseInt(req.params.userId) === 0) {
+            return res.status(404).json({ error: 'You can only delete your own progress.'});
+        }
 
+        const bookId = parseInt(req.params.bookId);
 
+        const progress = await prisma.progress.findUnique({
+            where: {
+                user_id_book_id: {
+                    user_id: req.user.id,
+                    book_id: bookId
+                }
+            }
+        });
 
+        if(!progress) {
+            return res.status(404).json({ error: 'Progress entry not found for this book.'});
+        }
 
+        if(progress.status === 'Completed') {
+            await prisma.users.update({
+                where: { user_id: req.user.id},
+                data: {
+                    books_read_this_year: {
+                        decrement: 1
+                    }
+                }
+            });
+
+            console.log(`Adjusted books read count for user ${req.user.id}`);
+        }
+
+            await prisma.progress.delete({
+                where: {
+                    user_id_book_id: {
+                        user_id: req.user.id,
+                        book_id: bookId
+                    }
+                }
+            });
+
+            res.json({
+                message: 'Progress entry successfully deleted',
+                book_id: bookId
+            });
+        
+    }
+    catch (err) {
+        console.error('Error deleting progress entry:', err);
+        res.status(500).json({ error: 'Internal server error'});
+    }
+});
 
 
 app.listen(PORT, () => {
