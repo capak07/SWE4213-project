@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
-const authcheck = require('./auth');
+
 
 const pool = new Pool({
     host: process.env.DB_HOST || 'users-db',
@@ -17,33 +17,6 @@ const pool = new Pool({
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
   });
-
-  const authenticateToken = async (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'No token given '});
-    }
-
-    try {
-        const user = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-
-        const result = await pool.query('SELECT user_id FROM users WHERE user_id = $1', [user.id]);
-
-        if(result.rows.length === 0) {
-            return res.status(401).json({ error: 'Invalid token'});
-        }
-
-        req.user = user;
-        next();
-    }
-    catch (err) {
-        console.error('Error verifying token:', err);
-        return res.status(403).json({ error: 'Invalid token'});
-    }
-  };
-
 
 app.post('/auth/login', async (req, res) => {
     try {
@@ -140,12 +113,22 @@ app.post('/auth/register', async (req, res) => {
     }
 });
 
-app.get('auth/status', authcheck, async (req, res) => {
+app.get('/auth/status', authcheck, async (req, res) => {
     try {
         const userData = await pool.query(
             'SELECT user_id, first_name, last_name, email FROM users WHERE user_id = $1',[req.user.id]
         );
+
+        res.json({
+            authenticated: true,
+            user: userData.rows[0]
+        });
     }
+    catch (err) {
+        console.error('Error checking auth status:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+
 });
 
 app.get('/users/:id', (req, res) => {

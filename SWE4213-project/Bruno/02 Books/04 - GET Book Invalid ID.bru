@@ -1,0 +1,21 @@
+meta {
+  name: 04 - GET Book Invalid ID
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/books/abc
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: eq Book not found
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

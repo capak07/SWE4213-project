@@ -1,0 +1,21 @@
+meta {
+  name: 04 - GET Review Invalid ID
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/reviews/abc
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: eq Review not found
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

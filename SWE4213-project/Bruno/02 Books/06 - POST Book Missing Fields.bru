@@ -1,0 +1,31 @@
+meta {
+  name: 06 - POST Book Missing Fields
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/books
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "genre": "Fiction"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.error: eq Title and author are required
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

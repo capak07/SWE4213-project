@@ -1,0 +1,32 @@
+meta {
+  name: 13 - PUT User Books Update
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{baseUrl}}/api/userBooks/{{createdUserId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "book_id": 1,
+    "have_read": true,
+    "want_to_read": false
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

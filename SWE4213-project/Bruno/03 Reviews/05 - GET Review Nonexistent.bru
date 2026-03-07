@@ -1,0 +1,21 @@
+meta {
+  name: 05 - GET Review Nonexistent
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/reviews/999999
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: eq Review not found
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

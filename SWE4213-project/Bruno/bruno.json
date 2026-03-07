@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "SWE4213-Project API Tests",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

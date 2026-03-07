@@ -1,0 +1,39 @@
+meta {
+  name: 02 - POST Book Create
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/books
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "title": "Bruno Book {{runId}}",
+    "author": "Bruno Author {{runId}}",
+    "genre": "Fiction",
+    "summary": "Created by Bruno test suite",
+    "cover_url": "https://example.com/cover.jpg"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  const body = res.getBody();
+  bru.setEnvVar("createdBookId", String(body.book_id));
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

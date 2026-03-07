@@ -1,0 +1,141 @@
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "3000:3000"
+    environment:
+      BOOK_SERVICE_URL: http://book-service:3002
+      REVIEW_SERVICE_URL: http://review-service:3003
+      USER_SERVICE_URL: http://user-service:3001
+    depends_on:
+      book-service:
+        condition: service_healthy
+      review-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  book-service:
+    build: ./book-service
+    ports:
+      - "3002:3002"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@book-db:5432/bookdb
+      DB_HOST: book-db
+      DB_PORT: 5432
+      DB_NAME: bookdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    depends_on:
+      book-db:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  book-db:
+    image: postgres:15-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: bookdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - book-data:/var/lib/postgresql/data
+      - ./book-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  review-service:
+    build: ./review-service
+    ports:
+      - "3003:3003"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@review-db:5432/reviewdb
+    depends_on:
+      review-db:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  review-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: reviewdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - review-data:/var/lib/postgresql/data
+      - ./review-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "3001:3001"
+    environment:
+      DB_HOST: users-db
+      DB_PORT: 5432
+      DB_NAME: usersdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: your_jwt_secret
+    depends_on:
+      users-db:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  users-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: usersdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - users-data:/var/lib/postgresql/data
+      - ./user-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  book-data:
+  review-data:
+  users-data:

@@ -1,0 +1,38 @@
+meta {
+  name: 02 - POST Review Create
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/reviews
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "user_id": 1,
+    "book_id": 1,
+    "rating": 5,
+    "review_text": "An absolutely fantastic read!"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+tests {
+  const body = res.getBody();
+  bru.setEnvVar("createdReviewId", String(body.review_id));
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

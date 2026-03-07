@@ -1,0 +1,38 @@
+meta {
+  name: 01 - POST User Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "first_name": "Bruno",
+    "last_name": "User {{runId}}",
+    "email": "bruno.user.{{runId}}@example.com",
+    "password": "password123"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+tests {
+  const body = res.getBody();
+  bru.setEnvVar("createdUserId", String(body.user.user_id));
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

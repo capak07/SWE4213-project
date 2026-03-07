@@ -1,0 +1,24 @@
+meta {
+  name: 01 - Setup Run Context
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/health
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  bru.setEnvVar("runId", Date.now().toString());
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

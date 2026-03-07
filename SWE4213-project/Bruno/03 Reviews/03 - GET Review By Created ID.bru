@@ -1,0 +1,25 @@
+meta {
+  name: 03 - GET Review By Created ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/reviews/{{createdReviewId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  const body = res.getBody();
+  expect(String(body.review_id)).to.equal(String(bru.getEnvVar("createdReviewId")));
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

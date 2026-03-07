@@ -1,0 +1,20 @@
+meta {
+  name: 07 - DELETE Book
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/api/books/{{createdBookId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

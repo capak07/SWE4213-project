@@ -1,0 +1,31 @@
+meta {
+  name: 06 - POST Review Missing Fields
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/reviews
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "review_text": "No user or book specified"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.error: eq user_id, book_id, and rating are required
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

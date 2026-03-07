@@ -1,0 +1,25 @@
+meta {
+  name: 09 - GET User By Created ID
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/users/{{createdUserId}}
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  const body = res.getBody();
+  expect(String(body.user_id)).to.equal(String(bru.getEnvVar("createdUserId")));
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

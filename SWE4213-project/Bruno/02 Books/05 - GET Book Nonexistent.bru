@@ -1,0 +1,21 @@
+meta {
+  name: 05 - GET Book Nonexistent
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/books/999999
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: eq Book not found
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

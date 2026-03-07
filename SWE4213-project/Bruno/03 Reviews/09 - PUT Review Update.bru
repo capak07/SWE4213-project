@@ -1,0 +1,36 @@
+meta {
+  name: 09 - PUT Review Update
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/reviews/{{createdReviewId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "rating": 4,
+    "review_text": "Updated: still a great read, but not perfect."
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  const body = res.getBody();
+  expect(body.rating).to.equal(4);
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

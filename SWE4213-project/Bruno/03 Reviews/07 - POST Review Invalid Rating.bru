@@ -1,0 +1,33 @@
+meta {
+  name: 07 - POST Review Invalid Rating
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/reviews
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "user_id": 2,
+    "book_id": 2,
+    "rating": 10
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.error: eq Rating must be between 1 and 5
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

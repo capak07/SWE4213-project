@@ -1,0 +1,32 @@
+meta {
+  name: 08 - POST User Login Nonexistent
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "nobody@example.com",
+    "password": "password123"
+  }
+}
+
+assert {
+  res.status: eq 401
+  res.body.error: eq Invalid email or password
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
