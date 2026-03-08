@@ -1,22 +1,13 @@
 const express = require('express');
-const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const authcheck = require('./auth');
-const { PrismaClient } = require('./generated/client');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
-
-const pool = new Pool({
-    host: process.env.DB_HOST || 'users-db',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    database: process.env.DB_NAME || 'usersdb',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-});
 
 
 app.get('/health', async (req, res) => {
@@ -27,7 +18,7 @@ app.get('/health', async (req, res) => {
     }
     catch(err) {
         res.status(200).json({ message: 'User service is running',
-                               databse: 'disconnected'});
+                               database: 'disconnected'});
     }
 });
 
@@ -166,15 +157,21 @@ app.get('/users/:id', async (req, res) => {
         const result = await prisma.users.findUnique({
             where: { user_id: userId },
             select: {
+                user_id: true,
+                first_name: true,
+                last_name: true,
+                email: true,
+                yearly_goal: true,
+                books_read_this_year: true
                 
             }
-        })
+        });
 
-        if(result.rows.length === 0) {
+        if(!result) {
             return res.status(404).json({ error: 'User was not found'});
         }
 
-        res.json(result.rows[0]);
+        res.json(result);
 
     }
     catch (err) {
@@ -186,16 +183,24 @@ app.get('/users/:id', async (req, res) => {
 
 app.get('/userBooks/:userId', async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT * FROM user_books WHERE user_id = $1',
-            [req.params.userId]
-        );
+        const userBooks = await prisma.user_books.findMany({
+            where: { user_id: req.params.userId},
+            select: {
+                book_id: true,
+                have_read: true,
+                want_to_read: true
+            },
+            orderBy: {
+                book_id: 'asc'
+            }
+        });
 
-        if(result.rows.length === 0) {
+
+        if(!userBooks || userBooks.length === 0) {
             return res.status(404).json({ error: 'No books found for this user'});
         }
 
-        res.json({ userId: req.params.userId, books: result.rows });
+        res.json({ userId: req.params.userId, books: userBooks });
 
     } catch (err) {
         console.error('Error fetching user books:', err);
@@ -203,34 +208,51 @@ app.get('/userBooks/:userId', async (req, res) => {
     }
 });
 
-app.put('/userBooks/:userId', async (req, res) => {
-    const userId = req.params.userId;
-    const { book_id, have_read, want_to_read } = req.body;
-
+app.put('/userBooks/:userId', authcheck, async (req, res) => {
     try {
-        const result = await pool.query(
-            `INSERT INTO user_books (user_id, book_id, have_read, want_to_read)
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT (user_id, book_id) DO UPDATE SET have_read = $3, want_to_read = $4
-             RETURNING *`,
-            [userId, book_id, have_read || false, want_to_read || false]
-        );
-        res.json(result.rows[0]);
+
+        const userId = parseInt(req.params.userId);
+        const { book_id, have_read, want_to_read } = req.body;
+
+
+        const userBook = await prisma.user_books.upsert({
+            where: {
+                user_id_book_id: {
+                    user_id: req.user.id,
+                    book_id: book_id
+                }
+            },
+            update: {
+                have_read: have_read !== undefined ? have_read : undefined,
+                want_to_read: want_to_read !== undefined ? want_to_read : undefined
+            },
+            create: {
+                user_id: userId,
+                book_id: book_id,
+                have_read: have_read || false,
+                want_to_read: want_to_read || false
+            }
+        });
+
+        res.json(userBook);
+
     } catch (err) {
         console.error('Error updating user books:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-app.get('/progress/:userId', async (req, res) => {
+app.get('/progress/:userId', authcheck, async (req, res) => {
     try {
 
-        if(parseInt(req.params.userId) === 0) {
-            return res.status(404).json({ error: 'You can only access your own progress'});
+        const userId = parseInt(req.params.userId);
+
+        if(userId !== req.user.id) {
+            return res.status(403).json({ error: 'You can only access your own progress'});
         }
 
         const progress = await prisma.progress.findMany({
-            where: {user_id: req.params.id},
+            where: {user_id: userId},
             select: {
                 progress_id: true,
                 book_id: true,
@@ -255,30 +277,30 @@ app.get('/progress/:userId', async (req, res) => {
     }
 });
 
-app.post('/progress', async (req, res) => {
+app.post('/progress', authcheck, async (req, res) => {
     try {
-        const { title, total_pages} = req.body;
+        const { book_id, total_pages} = req.body;
 
-        if(!title) {
-            return res.status(400).json({ error: 'Book title is required'});
+        if(!book_id) {
+            return res.status(400).json({ error: 'Book ID is required'});
         }
 
-        const created = await prisma.progress.findUnqiue({
+        const created = await prisma.progress.findUnique({
             where: {
                 user_id_book_id: {
-                    user_id: req.params.id,
+                    user_id: req.user.id,
                     book_id: book_id
                 }
             }
         });
 
         if(created) {
-            return res.status(400).json({ error: 'Progress for this book is already being tracked.'});
+            return res.status(409).json({ error: 'Progress for this book is already being tracked.'});
         }
 
         const progress = await prisma.progress.create({
             data: {
-                user_id: req.params.id,
+                user_id: req.user.id,
                 book_id: book_id,
                 pages_read: 0,
                 total_pages: total_pages || 0,
@@ -300,10 +322,12 @@ app.post('/progress', async (req, res) => {
 
 });
 
-app.put('progress/:userId/:bookId', async (req, res) => {
+app.put('/progress/:userId/:bookId', authcheck, async (req, res) => {
     try {
-        if(parseInt(req.params.userId) === 0) {
-            return res.status(404).json({ error: 'You can only update your own progress.'});
+
+        const userId = parseInt(req.params.userId);
+        if(userId !== req.user.id) {
+            return res.status(403).json({ error: 'You can only update your own progress.'});
         }
 
         const bookId = parseInt(req.params.bookId);
@@ -314,7 +338,7 @@ app.put('progress/:userId/:bookId', async (req, res) => {
             return res.status(400).json({ error: 'At least one of pages_read or status must be provided.'});
         }
 
-        const updatedProgress = await prisma.progress.findUnqiue({
+        const progress = await prisma.progress.findUnique({
             where: {
                 user_id_book_id: {
                     user_id: req.user.id,
@@ -327,6 +351,8 @@ app.put('progress/:userId/:bookId', async (req, res) => {
             return res.status(404).json({ error: 'Progress entry not found for this book.'});
         }
 
+        const updatedProgress = {};
+
         if(pages_read !== undefined) {
             if(pages_read > progress.total_pages) {
                 return res.status(400).json({ error: 'Pages read cannot exceed total pages.'} );
@@ -336,7 +362,7 @@ app.put('progress/:userId/:bookId', async (req, res) => {
         }
 
         if(status) {
-            const validStatuses = ['Reading', 'Completed', 'Paused'];
+            const validStatuses = ['Reading', 'Completed', 'Paused', 'Did Not Finish'];
             if(!validStatuses.includes(status)) {
                 return res.status(400).json({ error: `Invalid status. Valid options are: ${validStatuses.join(',')}`});
             }
@@ -344,11 +370,11 @@ app.put('progress/:userId/:bookId', async (req, res) => {
             updatedProgress.status = status;
         }
 
-        if(status === 'Completed' && updatedProgress.status !== 'Completed') {
+        if(status === 'Completed' && progress.status !== 'Completed') {
             updatedProgress.completed_at = new Date();
         }
 
-        if(status !== 'Completed' && updatedProgress.status === 'Completed') {
+        if(status !== 'Completed' && progress.status === 'Completed') {
             updatedProgress.completed_at = null;
         }
 
@@ -362,7 +388,7 @@ app.put('progress/:userId/:bookId', async (req, res) => {
             data: updatedProgress
         });
 
-        if(status === 'Completed' && updatedProgress.status !== 'Completed') {
+        if(status === 'Completed' && progress.status !== 'Completed') {
             await prisma.users.update({
                 where: { user_id: req.user.id},
                 data: {
@@ -390,10 +416,15 @@ app.put('progress/:userId/:bookId', async (req, res) => {
 
 });
 
-app.delete('/progress/:userId/:bookId', async (req, res) => {
+app.delete('/progress/:userId/:bookId', authcheck, async (req, res) => {
     try {
-        if(parseInt(req.params.userId) === 0) {
-            return res.status(404).json({ error: 'You can only delete your own progress.'});
+
+        const userId = parseInt(req.params.userId);
+
+        
+
+        if(userId !== req.user.id) {
+            return res.status(403).json({ error: 'You can only delete your own progress.'});
         }
 
         const bookId = parseInt(req.params.bookId);

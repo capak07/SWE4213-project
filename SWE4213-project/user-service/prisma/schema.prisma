@@ -1,7 +1,7 @@
 
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -14,17 +14,19 @@ model users {
   first_name   String   @db.VarChar(50)
   last_name    String   @db.VarChar(50)
   email        String   @unique @db.VarChar(50)
-  hashed_pass  String   @VarChar(255)
-  user_books   userBooks[] 
+  hashed_pass  String   db.@VarChar(255)
+  yearly_goal  Int      @default(0)
+  books_read_this_year   Int   @default(0)
+  user_books   user_books[] 
   progress     progress[]
 
-  @@map("users)
+  @@map("users")
 
 
 }
 
 model user_books {
-  user_book_id      Int      @id @defualt(autoincrement())
+  user_book_id      Int      @id @default(autoincrement())
   user_id           Int   
   book_id           Int
   have_read         Boolean  @default(false)
@@ -32,18 +34,18 @@ model user_books {
   users              User     @relation(fields: [user_id], references: [user_id], onDelete: NoAction)
 
   @@unique([user_id, book_id])
-  @@map("user_books)
+  @@map("user_books")
 
 }
 
 model progress {
   progress_id      Int    @id @default(autoincrement())
+  user_id          Int
+  book_id          Int
   pages_read       Int    @default(0)
   total_pages      Int    @default(0)
-  yearly_goal      Int    @default(0)
-  books_read_this_year    Int   @default(0)
   status          String  @db.VarChar(50)
-  stared_at        DateTime?   @db.Timestamp
+  started_at        DateTime?   @db.Timestamp
   completed_at     DateTime?   @db.Timestamp
   users            users       @relation(fields: [user_id], reference: [user_id], onDelete: NoAction)
 
