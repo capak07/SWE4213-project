@@ -40,7 +40,7 @@ app.get('/books/:id', async (req, res) => {
 });
 
 app.post('/books', async (req, res) => {
-  const { title, author, genre, summary, cover_url } = req.body;
+  const { title, author, genre, summary, total_pages, cover_url } = req.body;
 
   if (!title || !author) {
     return res.status(400).json({ error: 'Title and author are required' });
@@ -52,11 +52,12 @@ app.post('/books', async (req, res) => {
         title: title,
         author: author,
         genre: genre,
+        total_pages: total_pages || 0,
         summary: summary,
         cover_url: cover_url,
       },
     });
-    res.status(200).json(result);
+    res.status(201).json(result);
   } catch (err) {
     console.error('Error creating book:', err);
     res.status(500).json({ error: 'Internal server error' });

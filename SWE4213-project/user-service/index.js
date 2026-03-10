@@ -181,8 +181,15 @@ app.get('/users/:id', async (req, res) => {
 });
 
 
-app.get('/userBooks/:userId', async (req, res) => {
+app.get('/userBooks/:userId', authcheck, async (req, res) => {
     try {
+
+        const userId = parseInt(req.params.userId);
+
+        if(userId !== req.user.id) {
+            return res.status(403).json({ error: 'You can only access your own book list'});
+        }
+
         const userBooks = await prisma.user_books.findMany({
             where: { user_id: req.params.userId},
             select: {
@@ -200,10 +207,13 @@ app.get('/userBooks/:userId', async (req, res) => {
             return res.status(404).json({ error: 'No books found for this user'});
         }
 
-        res.json({ userId: req.params.userId, books: userBooks });
+        res.json({ userId: userId, books: userBooks });
 
     } catch (err) {
-        console.error('Error fetching user books:', err);
+        console.error('FULL ERROR in GET /userBooks:', err);
+        console.error('Error message:', err.message);
+        console.error('Error stack:', err.stack);
+        console.error('Error name:', err.name);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
@@ -213,6 +223,10 @@ app.put('/userBooks/:userId', authcheck, async (req, res) => {
 
         const userId = parseInt(req.params.userId);
         const { book_id, have_read, want_to_read } = req.body;
+
+        if(userId !== req.user.id) {
+            return res.status(403).json({ error: 'You can only update your own book list' });
+        }
 
 
         const userBook = await prisma.user_books.upsert({
@@ -227,7 +241,7 @@ app.put('/userBooks/:userId', authcheck, async (req, res) => {
                 want_to_read: want_to_read !== undefined ? want_to_read : undefined
             },
             create: {
-                user_id: userId,
+                user_id: req.user.id,
                 book_id: book_id,
                 have_read: have_read || false,
                 want_to_read: want_to_read || false
