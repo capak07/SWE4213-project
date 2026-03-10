@@ -1,0 +1,30 @@
+info:
+  name: 3 - POST login user
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: http://localhost:3001/auth/login
+  body:
+    type: json
+    data: |-
+      {
+        
+        "email": "test@unb.ca",
+        "password": "password123"
+        
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

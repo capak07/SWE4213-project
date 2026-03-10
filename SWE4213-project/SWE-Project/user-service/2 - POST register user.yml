@@ -1,0 +1,30 @@
+info:
+  name: 2 - POST register user
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:3001/auth/register
+  body:
+    type: json
+    data: |-
+      {
+        "first_name": "Sierra",
+        "last_name": "Howe",
+        "email": "test@unb.ca",
+        "password": "password123"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

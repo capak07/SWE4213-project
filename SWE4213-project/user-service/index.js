@@ -152,7 +152,7 @@ app.get('/auth/status', authcheck, async (req, res) => {
 
 app.get('/users/:id', async (req, res) => {
     try {
-        const userId = req.params.id;
+        const userId = parseInt(req.params.id);
 
         const result = await prisma.users.findUnique({
             where: { user_id: userId },
