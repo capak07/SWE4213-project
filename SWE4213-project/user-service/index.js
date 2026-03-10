@@ -191,7 +191,7 @@ app.get('/userBooks/:userId', authcheck, async (req, res) => {
         }
 
         const userBooks = await prisma.user_books.findMany({
-            where: { user_id: req.params.userId},
+            where: { user_id: userId},
             select: {
                 book_id: true,
                 have_read: true,
@@ -232,7 +232,7 @@ app.put('/userBooks/:userId', authcheck, async (req, res) => {
         const userBook = await prisma.user_books.upsert({
             where: {
                 user_id_book_id: {
-                    user_id: req.user.id,
+                    user_id: userId,
                     book_id: book_id
                 }
             },
