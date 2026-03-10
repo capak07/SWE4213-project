@@ -203,11 +203,8 @@ app.get('/userBooks/:userId', authcheck, async (req, res) => {
         });
 
 
-        if(!userBooks || userBooks.length === 0) {
-            return res.status(404).json({ error: 'No books found for this user'});
-        }
-
-        res.json({ userId: userId, books: userBooks });
+        res.json({ userId: userId, books: userBooks || [] });
+        
 
     } catch (err) {
         console.error('FULL ERROR in GET /userBooks:', err);
@@ -218,42 +215,144 @@ app.get('/userBooks/:userId', authcheck, async (req, res) => {
     }
 });
 
-app.put('/userBooks/:userId', authcheck, async (req, res) => {
+app.post('/userBooks/:userId/books', authcheck, async (req, res) => {
     try {
-
         const userId = parseInt(req.params.userId);
-        const { book_id, have_read, want_to_read } = req.body;
 
         if(userId !== req.user.id) {
-            return res.status(403).json({ error: 'You can only update your own book list' });
+            return res.status(403).json({ error: 'You can only add your own book list' });
         }
 
+        const { book_id, have_read, want_to_read } = req.body;
 
-        const userBook = await prisma.user_books.upsert({
+        if(!book_id) {
+            return res.status(400).json({ error: 'Book ID is required' });
+        }
+
+        const exists = await prisma.user_books.findUnique({
             where: {
                 user_id_book_id: {
                     user_id: userId,
                     book_id: book_id
                 }
-            },
-            update: {
-                have_read: have_read !== undefined ? have_read : undefined,
-                want_to_read: want_to_read !== undefined ? want_to_read : undefined
-            },
-            create: {
-                user_id: req.user.id,
-                book_id: book_id,
-                have_read: have_read || false,
-                want_to_read: want_to_read || false
             }
         });
 
-        res.json(userBook);
+        if(exists) {
+            return res.status(409).json({ error: 'This book is already in your list', book: exists });
+        }
 
-    } catch (err) {
-        console.error('Error updating user books:', err);
+        const userBook = await prisma.user_books.create({
+            data: {
+                user_id: userId,
+                book_id: book_id,
+                have_read: have_read || false,
+                want_to_read: want_to_read || false
+
+            }
+        });
+
+        res.status(201).json({
+            message: 'Book successfully added to user list',
+            book: userBook
+        });
+    }
+    catch (err) {
+        console.error('Error adding book to user list:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
+});
+
+app.put('/userBooks/:userId/books/:bookId', authcheck, async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const bookId = parseInt(req.params.bookId);
+
+        if(userId !== req.user.id) {
+            return res.status(403).json({ error: 'You can only update your own book list'});
+        }
+
+        const { have_read, want_to_read } = req.body;
+
+        const exists = await prisma.user_books.findUnique({
+            where: {
+                user_id_book_id: {
+                    user_id: userId,
+                    book_id: bookId
+                }
+            }
+        });
+
+        if(!exists) {
+            return res.status(404).json({ error: 'This book is not in your list'});
+        }
+
+        const updated = await prisma.user_books.update({
+            where: {
+                user_id_book_id: {
+                    user_id: userId,
+                    book_id: bookId
+                }
+            },
+            data: {
+                have_read: have_read !== undefined ? have_read : exists.have_read,
+                want_to_read: want_to_read !== undefined ? want_to_read : exists.want_to_read
+            }
+        });
+
+        res.json({
+            message: 'Book status successfully updated',
+            book: updated
+        });
+    }
+    catch (err) {
+        console.error('Error parsing userId or bookId:', err);
+        return res.status(400).json({ error: 'Invalid userId or bookId' });
+    }
+
+});
+
+app.delete('/userBooks/:userId/books/:bookId', authcheck, async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const bookId = parseInt(req.params.bookId);
+
+        if(userId !== req.user.id) {
+            return res.status(403).json({ error: 'You can only delete from your own book list'});
+        }
+
+        const exists = await prisma.user_books.findUnique({
+            where: {
+                user_id_book_id: {
+                    user_id: userId,
+                    book_id: bookId
+                }
+            }
+        });
+
+        if(!exists) {
+            return res.status(404).json({ error: 'This book is not in your list'});
+        }
+
+        await prisma.user_books.delete({
+            where: {
+                user_id_book_id: {
+                    user_id: userId,
+                    book_id: bookId
+                }
+            }
+        });
+
+        res.json({
+            message: 'Book successfully removed from user list',
+            book_id: bookId
+        });
+    }
+    catch (err) {
+        console.error('Error removing book from user list:', err);
+        return res.status(500).json({ error: 'Internal server error'});
+    }
+
 });
 
 app.get('/progress/:userId', authcheck, async (req, res) => {

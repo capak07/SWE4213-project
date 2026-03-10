@@ -47,6 +47,27 @@ app.post('/books', async (req, res) => {
   }
 
   try {
+    const existingBook = await prisma.books.findFirst({
+      where: {
+        AND: [
+          { title: { equals: title, mode: 'insensitive' } },
+          { author: { equals: author, mode: 'insensitive' } }
+        ]
+      }
+    });
+
+    
+    if (existingBook) {
+      return res.status(409).json({ 
+        error: 'A book with the same title and author already exists',
+        existingBook: {
+          id: existingBook.book_id,
+          title: existingBook.title,
+          author: existingBook.author  
+        }
+      });
+    }
+
     const result = await prisma.books.create({
       data: {
         title: title,
@@ -64,10 +85,21 @@ app.post('/books', async (req, res) => {
   }
 });
 
+
 app.delete('/books/:id', async (req, res) => {
   const { id } = req.params;
+  const bookId = Number(id);
 
   try {
+
+        const book = await prisma.books.findUnique({
+          where: { book_id: bookId }
+        });
+
+        if(!book) {
+          return res.status(404).json({ error: "Book not found" });
+        }
+
         const result = await prisma.books.delete({
           where: {book_id: Number(id)}
         });

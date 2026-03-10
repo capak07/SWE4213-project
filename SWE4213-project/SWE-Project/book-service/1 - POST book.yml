@@ -1,0 +1,32 @@
+info:
+  name: 1 - POST book
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:3002/books
+  body:
+    type: json
+    data: |-
+      {
+        "title": "The Humans",
+        "author": "Matt Haig",
+        "genre": "Science Fiction",
+        "total_pages": 327,
+        "summary": "The Humans by Matt Haig is a humorous and poignant sci-fi novel about an alien disguised as Cambridge mathematician Professor Andrew Martin. Tasked with destroying evidence of a major mathematical breakthrough, the alien initially despises human irrationality but grows to love humanity, discovering emotions, love, and the beauty of life's imperfections.",
+        "cover_url": "https://www.churchtimes.co.uk/articles/2020/7-february/books-arts/reading-groups/book-club-the-humans-by-matt-haig"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

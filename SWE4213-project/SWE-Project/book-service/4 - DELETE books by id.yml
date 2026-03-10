@@ -1,0 +1,21 @@
+info:
+  name: 4 - DELETE books by id
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: http://localhost:3002/books/5
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
