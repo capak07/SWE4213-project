@@ -8,6 +8,12 @@ http:
   url: http://localhost:3003/reviews
   auth: inherit
 
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+
 settings:
   encodeUrl: true
   timeout: 0

@@ -1,21 +1,14 @@
 info:
-  name: 7 - PUT review
+  name: 8 - DELETE review
   type: http
-  seq: 7
+  seq: 8
 
 http:
-  method: PUT
-  url: http://localhost:3003/reviews/2
+  method: DELETE
+  url: http://localhost:3003/reviews/1
   headers:
     - name: Authorization
       value: Bearer {{token}}
-  body:
-    type: json
-    data: |-
-      {
-        "rating": 5,
-        "rating_text": "Fixed my review"
-      }
   auth: inherit
 
 runtime:

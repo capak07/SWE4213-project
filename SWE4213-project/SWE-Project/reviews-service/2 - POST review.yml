@@ -14,9 +14,9 @@ http:
     data: |-
       {
         "user_id": 5,
-        "book_id": 3,
-        "rating": 3.5,
-        "review_text": "This is my other review so far."
+        "book_id": 1,
+        "rating": 2,
+        "review_text": "Another test"
         
       }
   auth: inherit

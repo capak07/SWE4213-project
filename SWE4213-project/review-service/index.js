@@ -165,7 +165,7 @@ app.post('/reviews', authcheck, async (req, res) => {
 
 
 app.put('/reviews/:user_id/:review_id', authcheck, async (req, res) => {
-  const { id } = req.params;
+  const { review_id } = req.params;
   const { rating, review_text } = req.body;
 
   if (rating !== undefined && (rating < 1 || rating > 5)) {
@@ -174,7 +174,7 @@ app.put('/reviews/:user_id/:review_id', authcheck, async (req, res) => {
 
   try {
     const existing = await prisma.reviews.findUnique({
-      where: { review_id: Number(id) },
+      where: { review_id: Number(review_id) },
     });
 
     if (!existing) {
@@ -187,7 +187,7 @@ app.put('/reviews/:user_id/:review_id', authcheck, async (req, res) => {
     data.updated_at = new Date();
 
     const review = await prisma.reviews.update({
-      where: { review_id: Number(id) },
+      where: { review_id: Number(review_id) },
       data,
     });
     res.json(review);
@@ -198,12 +198,12 @@ app.put('/reviews/:user_id/:review_id', authcheck, async (req, res) => {
 });
 
 
-app.delete('/reviews/:user_id/:review_id', authcheck, async (req, res) => {
+app.delete('/reviews/:review_id', authcheck, async (req, res) => {
   const { review_id } = req.params;
 
   try {
     await prisma.reviews.delete({
-      where: { review_id: Number(id) },
+      where: { review_id: Number(review_id) },
     });
     res.status(200).json({ message: 'Review successfully deleted' });
   } catch (err) {

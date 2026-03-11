@@ -5,8 +5,14 @@ info:
 
 http:
   method: GET
-  url: http://localhost:3003/reviews/1
+  url: http://localhost:3003/reviews/2
   auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
 
 settings:
   encodeUrl: true
