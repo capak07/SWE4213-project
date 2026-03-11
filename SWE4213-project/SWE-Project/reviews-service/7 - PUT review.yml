@@ -1,0 +1,30 @@
+info:
+  name: 7 - PUT review
+  type: http
+  seq: 7
+
+http:
+  method: PUT
+  url: http://localhost:3003/reviews/1
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+  body:
+    type: json
+    data: |-
+      {
+        "rating": 5,
+        "rating_text": "Fixed my review"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0QHVuYi5jYSIsIm5hbWUiOiJTaWVycmEgSG93ZSIsImlhdCI6MTc3MzIyOTYyNywiZXhwIjoxNzczMjMzMjI3fQ.ywmrApwbFFL6p0tzSdQ3dC4SoK5HmYJHkk2Yegh36pA
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

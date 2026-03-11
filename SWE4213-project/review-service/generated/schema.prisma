@@ -1,0 +1,23 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../generated"
+  engineType      = "binary"
+  previewFeatures = []
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model reviews {
+  review_id   Int      @id @default(autoincrement())
+  user_id     Int
+  book_id     Int
+  rating      Int
+  review_text String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  @@unique([user_id, book_id])
+}

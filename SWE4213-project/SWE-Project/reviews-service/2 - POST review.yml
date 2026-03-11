@@ -1,0 +1,37 @@
+info:
+  name: 2 - POST review
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:3003/reviews
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+  body:
+    type: json
+    data: |-
+      {
+        "user_id": 5,
+        "book_id": 3,
+        "rating": 3.5,
+        "review_text": "This is my other review so far."
+        
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0QHVuYi5jYSIsIm5hbWUiOiJTaWVycmEgSG93ZSIsImlhdCI6MTc3MzIyOTYyNywiZXhwIjoxNzczMjMzMjI3fQ.ywmrApwbFFL6p0tzSdQ3dC4SoK5HmYJHkk2Yegh36pA
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
