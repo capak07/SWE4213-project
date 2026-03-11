@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "title": "The Humans",
+        "title": "The Human",
         "author": "Matt Haig",
         "genre": "Science Fiction",
         "total_pages": 327,

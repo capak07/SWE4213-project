@@ -1,0 +1,27 @@
+info:
+  name: 13 - DELETE progress entry
+  type: http
+  seq: 13
+
+http:
+  method: DELETE
+  url: http://localhost:3001/progress/5/1
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+  auth: inherit
+
+runtime:
+  variables:
+    - name: token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0QHVuYi5jYSIsIm5hbWUiOiJTaWVycmEgSG93ZSIsImlhdCI6MTc3MzE5NDUyNywiZXhwIjoxNzczMTk4MTI3fQ.J-YA3tvV7giywhL7AP-91ECHhbZMmrWrl1JA-zSONag
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

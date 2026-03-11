@@ -379,9 +379,19 @@ app.get('/progress/:userId', authcheck, async (req, res) => {
 
         });
 
+        const progressWithPercentage = progress.map(item => ({
+            ...item,
+            percent_complete: item.total_pages > 0 
+                ? Math.round((item.pages_read / item.total_pages) * 100) 
+                : 0,
+            
+            progress_bar: '█'.repeat(Math.floor((item.pages_read / item.total_pages) * 10)) +
+                         '░'.repeat(10 - Math.floor((item.pages_read / item.total_pages) * 10))
+        }));
+
         res.json({
             userId: req.params.userId,
-            progress
+            progressWithPercentage
         });
     }
     catch(err) {

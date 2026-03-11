@@ -1,0 +1,27 @@
+info:
+  name: 7 - GET userBooks
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: http://localhost:3001/userBooks/5
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+  auth: inherit
+
+runtime:
+  variables:
+    - name: token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0QHVuYi5jYSIsIm5hbWUiOiJTaWVycmEgSG93ZSIsImlhdCI6MTc3MzE5MDY3MiwiZXhwIjoxNzczMTk0MjcyfQ.ZfF1lynZkN6tLCGliMbOzFiNf4WmYcrN4JO6swp0NBQ
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

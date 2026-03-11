@@ -1,0 +1,34 @@
+info:
+  name: 11 - PUT progress
+  type: http
+  seq: 11
+
+http:
+  method: PUT
+  url: http://localhost:3001/progress/5/1
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+  body:
+    type: json
+    data: |-
+      {
+        "pages_read": 20,
+        "status": "Reading"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0QHVuYi5jYSIsIm5hbWUiOiJTaWVycmEgSG93ZSIsImlhdCI6MTc3MzE5MDY3MiwiZXhwIjoxNzczMTk0MjcyfQ.ZfF1lynZkN6tLCGliMbOzFiNf4WmYcrN4JO6swp0NBQ
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

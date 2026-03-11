@@ -1,0 +1,30 @@
+info:
+  name: 10 - POST progress
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: http://localhost:3001/progress
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+  body:
+    type: json
+    data: |-
+      {
+        "book_id": 1,
+        "total_pages": 310
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0QHVuYi5jYSIsIm5hbWUiOiJTaWVycmEgSG93ZSIsImlhdCI6MTc3MzE5MDY3MiwiZXhwIjoxNzczMTk0MjcyfQ.ZfF1lynZkN6tLCGliMbOzFiNf4WmYcrN4JO6swp0NBQ
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
