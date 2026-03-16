@@ -1,0 +1,47 @@
+book-db-1  | The files belonging to this database system will be owned by user "postgres".
+book-db-1  | This user must also own the server process.
+book-db-1  | 
+book-db-1  | The database cluster will be initialized with locale "en_US.utf8".
+book-db-1  | The default database encoding has accordingly been set to "UTF8".
+book-db-1  | The default text search configuration will be set to "english".
+book-db-1  | 
+book-db-1  | Data page checksums are disabled.
+book-db-1  | 
+book-db-1  | fixing permissions on existing directory /var/lib/postgresql/data ... ok
+book-db-1  | creating subdirectories ... ok
+book-db-1  | selecting dynamic shared memory implementation ... posix
+book-db-1  | selecting default max_connections ... 100
+book-db-1  | selecting default shared_buffers ... 128MB
+book-db-1  | selecting default time zone ... UTC
+book-db-1  | creating configuration files ... ok
+book-db-1  | running bootstrap script ... ok
+book-db-1  | sh: locale: not found
+book-db-1  | 2026-03-16 21:33:00.623 UTC [35] WARNING:  no usable system locales were found
+book-db-1  | performing post-bootstrap initialization ... ok
+book-db-1  | syncing data to disk ... ok
+book-db-1  | 
+book-db-1  | 
+book-db-1  | Success. You can now start the database server using:
+book-db-1  | 
+book-db-1  |     pg_ctl -D /var/lib/postgresql/data -l logfile start
+book-db-1  | 
+book-db-1  | initdb: warning: enabling "trust" authentication for local connections
+book-db-1  | initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+book-db-1  | waiting for server to start....2026-03-16 21:33:03.825 UTC [47] LOG:  starting PostgreSQL 15.16 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+book-db-1  | 2026-03-16 21:33:03.829 UTC [47] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+book-db-1  | 2026-03-16 21:33:03.841 UTC [50] LOG:  database system was shut down at 2026-03-16 21:33:02 UTC
+book-db-1  | 2026-03-16 21:33:03.853 UTC [47] LOG:  database system is ready to accept connections
+book-db-1  |  done
+book-db-1  | server started
+book-db-1  | CREATE DATABASE
+book-db-1  | 
+book-db-1  | 
+book-db-1  | /usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/init.sql
+book-db-1  | CREATE TABLE
+book-db-1  | 2026-03-16 21:33:04.344 UTC [60] ERROR:  invalid input syntax for type integer: "Science fiction" at character 127
+book-db-1  | 2026-03-16 21:33:04.344 UTC [60] STATEMENT:  INSERT INTO books (title, author, total_pages, genre, summary, cover_url) VALUES
+book-db-1  | 	    ('The Hunger Games', 'Suzanne Collins', 'Science fiction', 374, 'The Hunger Games follows 16-year-old Katniss Everdeen, a girl from District 12 who volunteers for the 74th Hunger Games in place of her younger sister Primrose Everdeen.', 'https://upload.wikimedia.org/wikipedia/en/d/dc/The_Hunger_Games.jpg'),
+book-db-1  | 	    ('Romeo and Juliet', 'William Shakespeare', 'Tragedy', 96, 'Tragedy written by William Shakespeare about the romance between two young Italians from feuding families', 'https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1629680008i/18135.jpg');
+book-db-1  | psql:/docker-entrypoint-initdb.d/init.sql:13: ERROR:  invalid input syntax for type integer: "Science fiction"
+book-db-1  | LINE 2:     ('The Hunger Games', 'Suzanne Collins', 'Science fiction...
+book-db-1  |                                                     ^

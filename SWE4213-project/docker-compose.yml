@@ -103,6 +103,7 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       JWT_SECRET: your_jwt_secret
+      DATABASE_URL: postgresql://postgres:postgres@users-db:5432/usersdb
     depends_on:
       users-db:
         condition: service_healthy

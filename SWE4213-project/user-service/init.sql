@@ -3,14 +3,15 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(50) NOT NULL UNIQUE,
-    hashed_pass VARCHAR(255) NOT NULL
+    hashed_pass VARCHAR(255) NOT NULL,
+    yearly_goal INTEGER NOT NULL DEFAULT 0,
+    books_read_this_year INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS progress (
     progress_id SERIAL PRIMARY KEY,
     pages_read INTEGER NOT NULL DEFAULT 0,
     total_pages INTEGER NOT NULL,
-    books_read_this_year INTEGER NOT NULL DEFAULT 0,
     status VARCHAR(20) DEFAULT 'Not Started',
     started_at TIMESTAMP,
     completed_at TIMESTAMP,

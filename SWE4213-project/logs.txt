@@ -1,0 +1,19 @@
+user-service-1  | 
+user-service-1  | > users@1.0.0 start
+user-service-1  | > node index.js
+user-service-1  | 
+user-service-1  | /app/node_modules/.prisma/client/default.js:43
+user-service-1  |     throw new Error('@prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.');
+user-service-1  |     ^
+user-service-1  | 
+user-service-1  | Error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+user-service-1  |     at new PrismaClient (/app/node_modules/.prisma/client/default.js:43:11)
+user-service-1  |     at Object.<anonymous> (/app/index.js:6:16)
+user-service-1  |     at Module._compile (node:internal/modules/cjs/loader:1364:14)
+user-service-1  |     at Module._extensions..js (node:internal/modules/cjs/loader:1422:10)
+user-service-1  |     at Module.load (node:internal/modules/cjs/loader:1203:32)
+user-service-1  |     at Module._load (node:internal/modules/cjs/loader:1019:12)
+user-service-1  |     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+user-service-1  |     at node:internal/main/run_main_module:28:49
+user-service-1  | 
+user-service-1  | Node.js v18.20.8
