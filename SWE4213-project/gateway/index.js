@@ -42,6 +42,12 @@ app.use('/api/userBooks', createProxyMiddleware({
     pathRewrite: { '^/api/userBooks': '/userBooks' },
 }));
 
+app.use('/api/progress', createProxyMiddleware({
+    target: USER_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: { '^/api/progress': '/progress' },
+}));
+
 app.listen(PORT, () => {
     console.log(`API Gateway running on port ${PORT}`);
 });

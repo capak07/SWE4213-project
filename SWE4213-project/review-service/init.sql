@@ -8,3 +8,20 @@ CREATE TABLE IF NOT EXISTS reviews (
   updated_at TIMESTAMP DEFAULT NOW(),
   UNIQUE (user_id, book_id)
 );
+
+CREATE TABLE IF NOT EXISTS review_likes (
+  like_id SERIAL PRIMARY KEY,
+  review_id INTEGER NOT NULL REFERENCES reviews(review_id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE (review_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS review_comments (
+  comment_id SERIAL PRIMARY KEY,
+  review_id INTEGER NOT NULL REFERENCES reviews(review_id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL,
+  comment_text TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);

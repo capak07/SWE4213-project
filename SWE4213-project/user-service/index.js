@@ -198,6 +198,58 @@ app.put('/userBooks/:userId', async (req, res) => {
     }
 });
 
+app.get('/progress/:userId', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM progress WHERE user_id = $1', [req.params.userId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching progress:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.put('/progress/:userId/:bookId', async (req, res) => {
+    const { userId, bookId } = req.params;
+    const { pages_read, total_pages } = req.body;
+
+    try {
+        // Upsert progress
+        const result = await pool.query(
+            `INSERT INTO progress (user_id, book_id, pages_read, total_pages)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (user_id, book_id) 
+             DO UPDATE SET pages_read = $3, total_pages = $4
+             RETURNING *`,
+            [userId, bookId, pages_read, total_pages || 0]
+        );
+
+        // Check if finished (allow total_pages to be 0 for simplicity if unknown, but assuming valid > 0)
+        if (total_pages > 0 && pages_read >= total_pages) {
+            await pool.query(
+                `UPDATE user_books SET have_read = true, want_to_read = false
+                 WHERE user_id = $1 AND book_id = $2`,
+                [userId, bookId]
+            );
+            await pool.query(
+                `UPDATE progress SET status = 'Completed', completed_at = NOW()
+                 WHERE user_id = $1 AND book_id = $2`,
+                [userId, bookId]
+            );
+        } else {
+            await pool.query(
+                `UPDATE progress SET status = 'Reading'
+                 WHERE user_id = $1 AND book_id = $2`,
+                [userId, bookId]
+            );
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating progress:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`User service running on port ${PORT}`);
 });

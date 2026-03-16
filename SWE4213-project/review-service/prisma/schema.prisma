@@ -21,3 +21,21 @@ model reviews {
 
   @@unique([user_id, book_id])
 }
+
+model review_likes {
+  like_id    Int      @id @default(autoincrement())
+  review_id  Int
+  user_id    Int
+  created_at DateTime @default(now())
+
+  @@unique([review_id, user_id])
+}
+
+model review_comments {
+  comment_id   Int      @id @default(autoincrement())
+  review_id    Int
+  user_id      Int
+  comment_text String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
+}

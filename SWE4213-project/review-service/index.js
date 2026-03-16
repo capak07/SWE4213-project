@@ -150,6 +150,94 @@ app.delete('/reviews/:id', async (req, res) => {
   }
 });
 
+// Likes Endpoints
+app.get('/reviews/:id/likes', async (req, res) => {
+  const { id } = req.params;
+  const user_id = req.query.userId ? Number(req.query.userId) : null;
+  
+  try {
+    const likeCount = await prisma.review_likes.count({
+      where: { review_id: Number(id) }
+    });
+    
+    let hasLiked = false;
+    if (user_id) {
+      const userLike = await prisma.review_likes.findUnique({
+        where: { review_id_user_id: { review_id: Number(id), user_id } }
+      });
+      hasLiked = !!userLike;
+    }
+    
+    res.json({ count: likeCount, hasLiked });
+  } catch (err) {
+    console.error('Error fetching likes:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/reviews/:id/like', async (req, res) => {
+  const { id } = req.params;
+  const { user_id } = req.body;
+  
+  if (!user_id) return res.status(400).json({ error: 'user_id is required' });
+  
+  try {
+    const existingLike = await prisma.review_likes.findUnique({
+      where: { review_id_user_id: { review_id: Number(id), user_id: Number(user_id) } }
+    });
+    
+    if (existingLike) {
+      // Unlike
+      await prisma.review_likes.delete({
+        where: { review_id_user_id: { review_id: Number(id), user_id: Number(user_id) } }
+      });
+      res.json({ liked: false });
+    } else {
+      // Like
+      await prisma.review_likes.create({
+        data: { review_id: Number(id), user_id: Number(user_id) }
+      });
+      res.json({ liked: true });
+    }
+  } catch (err) {
+    console.error('Error toggling like:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Comments Endpoints
+app.get('/reviews/:id/comments', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const comments = await prisma.review_comments.findMany({
+      where: { review_id: Number(id) },
+      orderBy: { created_at: 'asc' }
+    });
+    res.json(comments);
+  } catch (err) {
+    console.error('Error fetching comments:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/reviews/:id/comments', async (req, res) => {
+  const { id } = req.params;
+  const { user_id, comment_text } = req.body;
+  
+  if (!user_id || !comment_text) return res.status(400).json({ error: 'user_id and comment_text are required' });
+  
+  try {
+    const comment = await prisma.review_comments.create({
+      data: { review_id: Number(id), user_id: Number(user_id), comment_text }
+    });
+    res.status(201).json(comment);
+  } catch (err) {
+    console.error('Error adding comment:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Review Service running on port ${PORT}`);
 });
