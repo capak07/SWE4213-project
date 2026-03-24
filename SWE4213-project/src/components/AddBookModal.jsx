@@ -61,7 +61,7 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
                 <div 
                     className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none"
                     style={{
-                        backgroundImage: `url('https://www.churchtimes.co.uk/media/5666135/haigm_thehumans-20200129133717920_web.jpg?width=410')`,
+                        backgroundImage: `url(https://img.spoonflower.com/c/14425705/p/f/m/3n5W1tkdnfx5oecwtr7kByZLJwWCSPxZYE6rfjAtVPuvbJHncxD3/Sandstone-%20solid%20color.jpg)`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat',
