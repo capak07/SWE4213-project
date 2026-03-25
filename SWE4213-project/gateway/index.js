@@ -7,6 +7,7 @@ const PORT = 3000;
 const BOOK_SERVICE_URL = process.env.BOOK_SERVICE_URL || 'http://localhost:3002';
 const REVIEW_SERVICE_URL = process.env.REVIEW_SERVICE_URL || 'http://localhost:3003';
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:3001';
+const REC_SERVICE_URL = process.env.REC_SERVICE_URL || 'http://localhost:3004';
 
 app.get('/health', (req, res) => {
     res.status(200).json({ message: 'Gateway is running' });
@@ -46,6 +47,12 @@ app.use('/api/progress', createProxyMiddleware({
     target: USER_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: { '^/api/progress': '/progress' },
+}));
+
+app.use('/api/rec', createProxyMiddleware({
+    target: REC_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: { '^/api/rec': '/rec' },
 }));
 
 app.listen(PORT, () => {

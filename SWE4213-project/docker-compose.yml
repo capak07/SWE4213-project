@@ -19,6 +19,7 @@ services:
       BOOK_SERVICE_URL: http://book-service:3002
       REVIEW_SERVICE_URL: http://review-service:3003
       USER_SERVICE_URL: http://user-service:3001
+      REC_SERVICE_URL: http://rec-service:3004
     depends_on:
       book-service:
         condition: service_healthy
@@ -147,6 +148,29 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 3s
+      retries: 5
+
+  rec-service:
+    build: ./rec-service
+    ports:
+      - "3004:3004"
+    environment:
+      BOOK_SERVICE_URL: http://book-service:3002
+      REVIEW_SERVICE_URL: http://review-service:3003
+      USER_SERVICE_URL: http://user-service:3001
+    depends_on:
+      book-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      review-service:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
       retries: 5
 
 networks:

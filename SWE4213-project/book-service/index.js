@@ -55,6 +55,40 @@ app.get('/books/:id', async (req, res) => {
   }
 });
 
+app.get('/books/author/:author', async (req, res) => {
+  const { author } = req.params;
+
+  try {
+    const result = await prisma.books.findMany({
+      where: { author: author},
+    });
+    if (!result) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+    res.json(result);
+  } catch (err) {
+    console.error('Error fetching book:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/books/genre/:genre', async (req, res) => {
+  const { genre } = req.params;
+
+  try {
+    const result = await prisma.books.findMany({
+      where: { genre: genre},
+    });
+    if (!result) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+    res.json(result);
+  } catch (err) {
+    console.error('Error fetching book:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/books', async (req, res) => {
   const { title, author, genre, summary, total_pages, cover_url } = req.body;
 

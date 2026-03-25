@@ -86,8 +86,59 @@ const Dashboard = ({ onBookSelect, user }) => {
             }
         };
 
+        const fetchAuthorRecs = async () => {
+            if (!user) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`/api/rec/author/${user.user_id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    //setUserBookStatuses(statuses);
+                }
+            } catch (err) {
+                console.error("Error fetching user books:", err);
+            }
+        };
+
+        const fetchRatingRecs = async () => {
+            if (!user) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`/api/rec/rating`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    //setUserBookStatuses(statuses);
+                }
+            } catch (err) {
+                console.error("Error fetching user books:", err);
+            }
+        };
+
+        const fetchGenreRecs = async () => {
+            if (!user) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`/api/rec/genre/${user.user_id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    //setUserBookStatuses(statuses);
+                }
+            } catch (err) {
+                console.error("Error fetching user books:", err);
+            }
+        };
+
         fetchBooks();
         fetchUserBooks();
+        fetchAuthorRecs();
+        fetchRatingRecs();
+        fetchGenreRecs();
     }, [user]);
 
     const handleBookAdded = (newBook) => {

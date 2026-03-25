@@ -66,8 +66,6 @@ const NotificationModal = ({ isOpen, onClose, user }) => {
                     })
                 );
                 setReviewBooks(books);
-                console.log(uniqueBookIds)
-                console.log(books)
 
             } catch (err) {
                 console.error("Error fetching interactions:", err);

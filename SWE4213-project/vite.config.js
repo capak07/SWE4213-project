@@ -8,34 +8,39 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/auth': {
-        target: 'http://localhost:3001',
+        target: 'http://user-service:3001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/auth/, '/auth')
       },
       '/api/users': {
-        target: 'http://localhost:3001',
+        target: 'http://user-service:3001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/users/, '/users')
       },
       '/api/userBooks': {
-        target: 'http://localhost:3001',
+        target: 'http://user-service:3001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/userBooks/, '/userBooks')
       },
       '/api/progress': {
-        target: 'http://localhost:3001',
+        target: 'http://user-service:3001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/progress/, '/progress')
       },
       '/api/books': {
-        target: 'http://localhost:3002',
+        target: 'http://book-service:3002',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/books/, '/books')
       },
       '/api/reviews': {
-        target: 'http://localhost:3003',
+        target: 'http://review-service:3003',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/reviews/, '/reviews')
+      },
+      '/api/rec': {
+        target: 'http://rec-service:3004',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/rec/, '/rec')
       }
     }
   }
