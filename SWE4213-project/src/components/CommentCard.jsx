@@ -22,7 +22,6 @@ const CommentCard = ({ review, userName, comment, book }) => {
         return `${Math.floor(diffDays / 365)}y ago`;
     };
 
-    console.log(book)
 
     return (
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-100 mb-4">

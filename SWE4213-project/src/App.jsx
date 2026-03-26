@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Dashboard from './components/Dashboard'
 import BookDetails from './components/BookDetails'
 import Profile from './components/Profile'
+import Recommendations from './components/Recommendations'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -70,6 +71,11 @@ function App() {
     setCurrentPage('dashboard');
   };
 
+  const handleRecommendations = () => {
+    setSelectedBook(null);
+    setCurrentPage('rec');
+  };
+
   if (authLoading) return (
     <div className="min-h-screen bg-cream flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
@@ -95,6 +101,9 @@ function App() {
           )}
           {currentPage === 'bookDetails' && selectedBook && (
             <BookDetails book={selectedBook} user={user} onBack={handleBackToDashboard} />
+          )}
+          {currentPage === 'rec' && (
+            <Recommendations user={user}  onBookSelect={handleBookSelect}/>
           )}
         </>
       )}

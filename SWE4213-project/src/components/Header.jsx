@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, User, LogOut } from 'lucide-react';
+import { BookOpen, User, LogOut, Heart } from 'lucide-react';
 
 const Header = ({ onNavigate, onLogout, user }) => {
     return (
@@ -28,6 +28,13 @@ const Header = ({ onNavigate, onLogout, user }) => {
 
                     {user && (
                         <>
+                            <button
+                                onClick={() => onNavigate('rec')}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-all"
+                            >
+                                <Heart className="w-4 h-4" />
+                                <span className="hidden sm:inline">Recommendations</span>
+                            </button>
                             <button
                                 onClick={() => onNavigate('profile')}
                                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-all"
