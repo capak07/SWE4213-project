@@ -23,6 +23,7 @@ const BookCard = ({ book, avgRating, onViewDetails, userBookStatus }) => {
         : userBookStatus?.want_to_read
             ? 'Want to Read'
             : null;
+    
 
     const statusColor = userBookStatus?.have_read
         ? 'bg-primary text-white'

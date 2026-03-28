@@ -6,6 +6,7 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
     const [genre, setGenre] = useState('');
     const [summary, setSummary] = useState('');
     const [coverUrl, setCoverUrl] = useState('');
+    const [totalPages, setTotalPages] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -25,7 +26,8 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
                     author,
                     genre: genre || undefined,
                     summary: summary || undefined,
-                    cover_url: coverUrl || undefined,
+                    total_pages: totalPages ? parseInt(totalPages) : undefined,
+                    cover_url: coverUrl || undefined
                 }),
             });
 
@@ -134,6 +136,18 @@ const AddBookModal = ({ isOpen, onClose, onBookAdded }) => {
                                 onChange={(e) => setSummary(e.target.value)}
                                 rows={3}
                                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all resize-none bg-white/90"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Total Pages </label>
+                            <input
+                                type="text"
+                                required
+                                placeholder="Enter total number of pages in this book"
+                                value={totalPages}
+                                onChange={(e) => setTotalPages(e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all bg-white/90"
                             />
                         </div>
 
