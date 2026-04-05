@@ -30,7 +30,8 @@ const UpdateProgressModal = ({ isOpen, onClose, user, bookUpdating, onProgressUp
 
             if (response.ok) {
                 onProgressUpdated(data);
-                setPagesRead(0);
+                setStatus('')
+                setPagesRead('');
                 onClose();
             } else {
                 setError(data.error || 'Failed to update progress');
