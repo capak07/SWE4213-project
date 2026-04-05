@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Info } from 'lucide-react';
+import { on } from 'cluster';
 
 const Signup = ({ onSignup, onToggleView }) => {
     const [firstName, setFirstName] = useState('');
@@ -41,6 +42,24 @@ const Signup = ({ onSignup, onToggleView }) => {
                 onSignup(data.user);
             } else {
                 setError(data.error || 'Signup failed');
+            }
+
+            const loginResponse = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password}),
+            });
+
+            const loginData = await loginResponse.json();
+
+            if (loginResponse.ok) {
+                localStorage.setItem('token', loginData.token);
+                localStorage.setItem('user', JSON.stringify(loginData.user));
+                onSignup(loginData.user);
+            }
+            else {
+                setError('Signup was successful, please log in manually');
+                if(onToggleView) onToggleView();
             }
         } catch (err) {
             console.error('Signup error:', err);
